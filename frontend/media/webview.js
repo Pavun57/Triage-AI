@@ -6,6 +6,7 @@ const state = {
   debugMode: true, // Start with debug mode enabled for testing
   connectionOk: false,
   pendingRequests: new Map(), // Store pending API requests
+  animationsEnabled: true, // Enable animations by default
   outputs: {
     pm: null,
     architect: null,
@@ -14,10 +15,56 @@ const state = {
   }
 };
 
+// Add CSS for ripple effect and animations
+function addAnimationStyles() {
+  // Check if we've already added the styles
+  if (document.getElementById('animation-styles')) {
+    return;
+  }
+  
+  const style = document.createElement('style');
+  style.id = 'animation-styles';
+  style.textContent = `
+    .ripple-effect {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: scale(0);
+      animation: ripple-animation 0.6s linear;
+    }
+    
+    @keyframes ripple-animation {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+    
+    .fade-out {
+      animation: fade-out 0.3s ease forwards;
+    }
+    
+    @keyframes fade-out {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    
+    button {
+      position: relative;
+      overflow: hidden;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 // Initialize the UI when the page loads
 document.addEventListener('DOMContentLoaded', () => {
   console.log("DOM loaded - TriageAI initialized");
   log("Triage AI is initializing...");
+  
+  // Add animation styles
+  addAnimationStyles();
   
   // Set up event listeners
   setupEventListeners();
@@ -308,41 +355,119 @@ function testBackendConnection() {
     });
 }
 
-// Show the loading spinner
+// Show the loading spinner with enhanced animation
 function showLoading(message) {
   const spinner = document.getElementById('loading-spinner');
   const messageEl = document.getElementById('loading-message');
-  if (messageEl) messageEl.textContent = message || 'Processing...';
-  if (spinner) spinner.classList.add('active');
+  
+  if (messageEl) {
+    const finalMessage = message || 'Processing...';
+    
+    if (state.animationsEnabled) {
+      // Animate the text appearing one character at a time
+      messageEl.textContent = '';
+      let i = 0;
+      const typeInterval = setInterval(() => {
+        if (i < finalMessage.length) {
+          messageEl.textContent += finalMessage.charAt(i);
+          i++;
+        } else {
+          clearInterval(typeInterval);
+        }
+      }, 40);
+    } else {
+      messageEl.textContent = finalMessage;
+    }
+  }
+  
+  if (spinner) {
+    spinner.classList.add('active');
+  }
+  
   log(`Loading: ${message}`);
 }
 
-// Hide the loading spinner
+// Hide the loading spinner with fade out
 function hideLoading() {
   const spinner = document.getElementById('loading-spinner');
-  if (spinner) spinner.classList.remove('active');
+  
+  if (spinner) {
+    if (state.animationsEnabled) {
+      // Add fade-out class for smooth transition
+      spinner.classList.add('fade-out');
+      
+      // Remove classes after animation completes
+      setTimeout(() => {
+        spinner.classList.remove('active', 'fade-out');
+      }, 300);
+    } else {
+      spinner.classList.remove('active');
+    }
+  }
 }
 
-// Update the UI based on current step
+// Update the UI based on current step with enhanced animations
 function updateUI() {
-  // Update step indicators
+  // Update step indicators with staggered animation
   document.querySelectorAll('.step').forEach((step, index) => {
     step.classList.remove('active', 'completed');
-    if (index + 1 === state.currentStep) {
-      step.classList.add('active');
-    } else if (index + 1 < state.currentStep) {
-      step.classList.add('completed');
+    
+    if (state.animationsEnabled) {
+      // Add a slight delay for visual effect
+      setTimeout(() => {
+        if (index + 1 === state.currentStep) {
+          step.classList.add('active');
+        } else if (index + 1 < state.currentStep) {
+          step.classList.add('completed');
+        }
+      }, index * 100);
+    } else {
+      // No animation, update immediately
+      if (index + 1 === state.currentStep) {
+        step.classList.add('active');
+      } else if (index + 1 < state.currentStep) {
+        step.classList.add('completed');
+      }
     }
   });
   
-  // Update panels
-  document.querySelectorAll('.agent-panel').forEach((panel, index) => {
-    if (index + 1 === state.currentStep) {
-      panel.classList.add('active');
-    } else {
-      panel.classList.remove('active');
-    }
-  });
+  // Update panels with smooth transitions
+  if (state.animationsEnabled) {
+    // First, remove active class from all panels
+    document.querySelectorAll('.agent-panel').forEach((panel) => {
+      if (panel.classList.contains('active')) {
+        panel.classList.remove('active');
+      }
+    });
+    
+    // Then, after a short delay, add active class to the current panel
+    setTimeout(() => {
+      const currentPanel = document.querySelectorAll('.agent-panel')[state.currentStep - 1];
+      if (currentPanel) {
+        currentPanel.classList.add('active');
+        
+        // Add focus effect to the first input in the panel
+        const firstInput = currentPanel.querySelector('textarea, input');
+        if (firstInput) {
+          setTimeout(() => {
+            firstInput.focus();
+          }, 500);
+        }
+      }
+    }, 100);
+  } else {
+    // No animation, update immediately
+    document.querySelectorAll('.agent-panel').forEach((panel, index) => {
+      if (index + 1 === state.currentStep) {
+        panel.classList.add('active');
+      } else {
+        panel.classList.remove('active');
+      }
+    });
+  }
+  
+  // Add ripple effect to all buttons
+  addRippleToButtons();
   
   // Notify extension about step change
   vscode.postMessage({
@@ -353,7 +478,38 @@ function updateUI() {
   log(`UI updated to step ${state.currentStep}`);
 }
 
-// UPDATE: Simple function to display content directly with minimal formatting
+// Add ripple effect to buttons
+function addRippleToButtons() {
+  const buttons = document.querySelectorAll('button');
+  
+  buttons.forEach(button => {
+    // Only add the event listener once
+    if (!button.getAttribute('data-has-ripple')) {
+      button.setAttribute('data-has-ripple', 'true');
+      
+      button.addEventListener('click', function(e) {
+        if (!state.animationsEnabled) return;
+        
+        const rect = button.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple-effect';
+        ripple.style.left = `${x}px`;
+        ripple.style.top = `${y}px`;
+        
+        button.appendChild(ripple);
+        
+        setTimeout(() => {
+          ripple.remove();
+        }, 600);
+      });
+    }
+  });
+}
+
+// Enhanced function to display content with animations and better formatting
 function updateOutput(elementId, content) {
   const outputElement = document.getElementById(elementId);
   if (!outputElement) {
@@ -375,33 +531,83 @@ function updateOutput(elementId, content) {
   // Create a container for the raw content
   const rawContentDiv = document.createElement('div');
   rawContentDiv.className = 'raw-content';
-  rawContentDiv.style.whiteSpace = 'pre-wrap';
-  rawContentDiv.style.fontFamily = 'monospace';
-  rawContentDiv.style.border = '1px solid #ddd';
-  rawContentDiv.style.padding = '10px';
-  rawContentDiv.style.margin = '10px 0';
-  rawContentDiv.style.backgroundColor = '#f5f5f5';
   rawContentDiv.textContent = content;
   
-  // Create a container for simple formatted content
+  // Create a container for formatted content
   const formattedDiv = document.createElement('div');
   formattedDiv.className = 'formatted-content';
   
-  // Very basic formatting to preserve content
+  // Enhanced formatting with better markdown support
   let formattedContent = content
     .replace(/##\s+([^\n]+)/g, '<h3>$1</h3>')
     .replace(/###\s+([^\n]+)/g, '<h4>$1</h4>')
     .replace(/\n- ([^\n]+)/g, '<ul><li>$1</li></ul>')
-    .replace(/\n\n/g, '<br><br>');
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>') // Inline code
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') // Bold
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>'); // Italic
   
-  formattedDiv.innerHTML = formattedContent;
-  
-  // Clear existing content and append both versions
+  // Clear existing content
   outputElement.innerHTML = '';
+  
+  // Append raw content first
   outputElement.appendChild(rawContentDiv);
-  outputElement.appendChild(formattedDiv);
+  
+  // If animations are enabled, animate the formatted content appearance
+  if (state.animationsEnabled) {
+    // First add the empty div
+    outputElement.appendChild(formattedDiv);
+    
+    // Then animate the text appearing
+    setTimeout(() => {
+      animateTextAppearance(formattedDiv, formattedContent);
+    }, 100);
+  } else {
+    // No animation, just set the content
+    formattedDiv.innerHTML = formattedContent;
+    outputElement.appendChild(formattedDiv);
+  }
   
   log(`AFTER UPDATE: Element ${elementId} now has content and is visible`);
+}
+
+// Function to animate text appearing in output areas
+function animateTextAppearance(element, html) {
+  if (!element || !html || !state.animationsEnabled) {
+    if (element) element.innerHTML = html;
+    return;
+  }
+  
+  // For HTML content, we need to handle it differently than plain text
+  // We'll use a simple approach of adding chunks of HTML at a time
+  element.innerHTML = '';
+  
+  // Split the HTML into manageable chunks (roughly 20 characters each)
+  // This is a simplification - in a real app you might want to parse the HTML properly
+  const chunkSize = 20;
+  const chunks = [];
+  
+  for (let i = 0; i < html.length; i += chunkSize) {
+    chunks.push(html.substring(i, i + chunkSize));
+  }
+  
+  let chunkIndex = 0;
+  
+  function addNextChunk() {
+    if (chunkIndex < chunks.length) {
+      element.innerHTML += chunks[chunkIndex];
+      chunkIndex++;
+      
+      // Scroll to bottom as text appears
+      element.scrollTop = element.scrollHeight;
+      
+      // Schedule next chunk
+      setTimeout(addNextChunk, 10);
+    }
+  }
+  
+  // Start the animation
+  addNextChunk();
 }
 
 // Handle the analyze button click

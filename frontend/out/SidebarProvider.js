@@ -98,45 +98,7 @@ class SidebarProvider {
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
   <title>Triage AI</title>
   <link href="${styleUri}" rel="stylesheet" />
-  <style nonce="${nonce}">
-    .output-content {
-      margin-top: 10px;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      background-color: #f9f9f9;
-      overflow-wrap: break-word;
-    }
-    .output-content h3 {
-      margin-top: 10px;
-      margin-bottom: 5px;
-    }
-    .output-content h4 {
-      margin-top: 8px;
-      margin-bottom: 4px;
-    }
-    .output-content ul {
-      margin-top: 5px;
-      margin-bottom: 5px;
-      padding-left: 20px;
-    }
-    .output-content p {
-      margin-top: 5px;
-      margin-bottom: 5px;
-    }
-    .restart-button {
-      display: inline-block;
-      margin-top: 15px;
-      padding: 5px 10px;
-      background-color: #f0f0f0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .restart-button:hover {
-      background-color: #e0e0e0;
-    }
-  </style>
+  <!-- All styles moved to main.css -->
 </head>
 <body>
   <div class="container">
@@ -171,14 +133,14 @@ class SidebarProvider {
     </header>
 
     <!-- Debug panel -->
-    <div id="debug-panel" style="background: #f0f0f0; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; display: block;">
+    <div id="debug-panel">
       <h3>Debug Information</h3>
-      <div id="debug-output" style="font-family: monospace; white-space: pre-wrap; max-height: 200px; overflow: auto;"></div>
-      <div style="margin-top: 10px;">
-        <button id="test-connection" style="margin-right: 10px;">Test Backend Connection</button>
+      <div id="debug-output"></div>
+      <div class="debug-controls">
+        <button id="test-connection">Test Backend Connection</button>
         <button id="toggle-debug">Toggle Debug Panel</button>
       </div>
-      <div style="margin-top: 5px;">
+      <div class="debug-controls">
         <button id="start-new" class="restart-button">Start New Task</button>
       </div>
     </div>
@@ -263,9 +225,11 @@ class SidebarProvider {
         </div>
       </section>
 
-      <!-- Loading Spinner -->
+      <!-- Loading Spinner with enhanced structure -->
       <div id="loading-spinner" class="loading-overlay">
-        <div class="spinner"></div>
+        <div class="spinner">
+          <div class="spinner-inner"></div>
+        </div>
         <p id="loading-message">Processing...</p>
       </div>
     </main>

@@ -4,6 +4,7 @@ const vscode = acquireVsCodeApi();
 // Global state
 let currentStep = 1;
 const totalSteps = 4;
+let animationsEnabled = true; // Flag to control animations
 
 // Log execution start to verify the script is loaded
 console.log('Triage AI: Script executed');
@@ -140,49 +141,205 @@ function initializeUI() {
 function updateUI() {
   console.log(`Updating UI for step ${currentStep}`);
   
-  // Update step indicators
+  // Update step indicators with staggered animation
   if (stepIndicators) {
     stepIndicators.forEach(function(indicator, index) {
       const step = index + 1;
       indicator.classList.remove('active', 'completed');
       
-      if (step === currentStep) {
-        indicator.classList.add('active');
-      } else if (step < currentStep) {
-        indicator.classList.add('completed');
-      }
+      // Add a slight delay for visual effect
+      setTimeout(() => {
+        if (step === currentStep) {
+          indicator.classList.add('active');
+        } else if (step < currentStep) {
+          indicator.classList.add('completed');
+        }
+      }, index * 100);
     });
   }
 
-  // Show active panel, hide others
+  // Show active panel, hide others with smooth transitions
   if (agentPanels) {
-    agentPanels.forEach(function(panel, index) {
-      const step = index + 1;
-      if (step === currentStep) {
-        panel.classList.add('active');
-        console.log(`Panel ${step} activated`);
-      } else {
+    // First, remove active class from all panels
+    agentPanels.forEach(function(panel) {
+      if (panel.classList.contains('active')) {
         panel.classList.remove('active');
       }
     });
+    
+    // Then, after a short delay, add active class to the current panel
+    setTimeout(() => {
+      const currentPanel = agentPanels[currentStep - 1];
+      if (currentPanel) {
+        currentPanel.classList.add('active');
+        console.log(`Panel ${currentStep} activated`);
+        
+        // Add focus effect to the first input in the panel
+        const firstInput = currentPanel.querySelector('textarea, input');
+        if (firstInput) {
+          setTimeout(() => {
+            firstInput.focus();
+          }, 500);
+        }
+      }
+    }, 100);
   }
+  
+  // Add ripple effect to all buttons
+  addRippleToButtons();
 }
 
-// Show loading spinner
+// Add ripple effect to buttons
+function addRippleToButtons() {
+  const buttons = document.querySelectorAll('button');
+  
+  buttons.forEach(button => {
+    // Only add the event listener once
+    if (!button.getAttribute('data-has-ripple')) {
+      button.setAttribute('data-has-ripple', 'true');
+      
+      button.addEventListener('click', function(e) {
+        if (!animationsEnabled) return;
+        
+        const rect = button.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple-effect';
+        ripple.style.left = `${x}px`;
+        ripple.style.top = `${y}px`;
+        
+        button.appendChild(ripple);
+        
+        setTimeout(() => {
+          ripple.remove();
+        }, 600);
+      });
+    }
+  });
+}
+
+// Show loading spinner with enhanced animation
 function showLoading(message) {
   console.log(`Loading: ${message}`);
+  
+  // Create typing animation for loading message
   if (loadingMessage) {
-    loadingMessage.textContent = message;
+    const finalMessage = message || 'Processing...';
+    loadingMessage.textContent = '';
+    
+    if (animationsEnabled) {
+      // Animate the text appearing one character at a time
+      let i = 0;
+      const typeInterval = setInterval(() => {
+        if (i < finalMessage.length) {
+          loadingMessage.textContent += finalMessage.charAt(i);
+          i++;
+        } else {
+          clearInterval(typeInterval);
+        }
+      }, 50);
+    } else {
+      // No animation, just set the text
+      loadingMessage.textContent = finalMessage;
+    }
   }
+  
   if (loadingSpinner) {
     loadingSpinner.classList.add('active');
   }
 }
 
-// Hide loading spinner
+// Hide loading spinner with fade out
 function hideLoading() {
   console.log('Loading complete');
+  
   if (loadingSpinner) {
-    loadingSpinner.classList.remove('active');
+    // Add fade-out class for smooth transition
+    loadingSpinner.classList.add('fade-out');
+    
+    // Remove classes after animation completes
+    setTimeout(() => {
+      loadingSpinner.classList.remove('active', 'fade-out');
+    }, 300);
   }
 }
+
+// Function to animate text appearing in output areas
+function animateTextAppearance(element, text) {
+  if (!element || !text || !animationsEnabled) {
+    if (element) element.innerHTML = text;
+    return;
+  }
+  
+  element.innerHTML = '';
+  let i = 0;
+  const speed = 5; // Characters per frame
+  
+  function typeWriter() {
+    if (i < text.length) {
+      const nextChunk = text.substring(i, i + speed);
+      element.innerHTML += nextChunk;
+      i += speed;
+      
+      // Scroll to bottom as text appears
+      element.scrollTop = element.scrollHeight;
+      
+      requestAnimationFrame(typeWriter);
+    }
+  }
+  
+  requestAnimationFrame(typeWriter);
+}
+
+// Add CSS for ripple effect
+function addRippleStyles() {
+  const style = document.createElement('style');
+  style.textContent = `
+    .ripple-effect {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: scale(0);
+      animation: ripple-animation 0.6s linear;
+    }
+    
+    @keyframes ripple-animation {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+    
+    .fade-out {
+      animation: fade-out 0.3s ease forwards;
+    }
+    
+    @keyframes fade-out {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+// Initialize the page
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM content loaded - initializing main.js');
+  
+  // Add ripple effect styles
+  addRippleStyles();
+  
+  // Initialize UI
+  initializeUI();
+  
+  // Add ripple effect to all buttons
+  addRippleToButtons();
+});
+
+// Also try immediate initialization for VSCode webviews
+addRippleStyles();
+initializeUI();
+addRippleToButtons(); // Add ripple effect to all buttons
