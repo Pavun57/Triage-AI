@@ -420,7 +420,11 @@ async function handleAnalyze() {
   try {
     // Call backend to start a new task
     log('Sending prompt to backend:', prompt);
-    const runResponse = await apiCall('/run', 'POST', { problem: prompt });
+    // Get workspace path from extension
+    const runResponse = await apiCall('/run', 'POST', { 
+      problem: prompt,
+      // The workspace_path will be added by the extension.ts makeApiRequest function
+    });
     log('Run response received:', runResponse);
     
     if (!runResponse || !runResponse.task_id) {

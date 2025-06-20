@@ -7,6 +7,7 @@ import time
 #  API Models
 class ProblemRequest(BaseModel):
     problem: str
+    workspace_path: Optional[str] = None
 
 class FeedbackRequest(BaseModel):
     feedback: str
@@ -45,6 +46,7 @@ class StatusResponse(BaseModel):
     paused: bool = False
     pause_reason: Optional[str] = None
     pause_timestamp: Optional[float] = None
+    workspace_path: Optional[str] = None
 
 class AgentOutputResponse(BaseModel):
     agent: str

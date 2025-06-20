@@ -1,10 +1,13 @@
-from tools.crew_tools import architect_tools, programmer_tools, tester_tools, reviewer_tools, security_tools, search_web, read_file, write_file, create_directory
 from agents.agents import CustomAgents
 from tasks.tasks import CustomTasks
 from tools.search_utils import CachedSearch
 import time
 from crewai import Crew, Task
 import os
+
+# Import these later to avoid circular imports
+# These will be imported when needed in the functions
+# from tools.crew_tools import architect_tools, programmer_tools, tester_tools, reviewer_tools, security_tools, search_web, read_file, write_file, create_directory
 
 
 # Task tracking storage
@@ -16,6 +19,7 @@ class TaskStatus:
         self.started = True
         self.current_agent = "project_manager"  # Start with project manager now
         self.completed_agents = []
+        self.workspace_path = None  # Store the user's workspace path
         self.agent_outputs = {
             "project_manager": None,
             "architect": None,
@@ -211,6 +215,9 @@ class CustomCrew:
     def run_architect_with_feedback(self, feedback):
         """Run architect agent with feedback"""
         try:
+            # Import tools here to avoid circular imports
+            from tools.crew_tools import architect_tools
+            
             agents = CustomAgents()
             tasks = CustomTasks()
             
@@ -271,6 +278,9 @@ class CustomCrew:
     def run_programmer_with_feedback(self, feedback):
         """Run programmer agent with feedback"""
         try:
+            # Import tools here to avoid circular imports
+            from tools.crew_tools import programmer_tools
+            
             agents = CustomAgents()
             tasks = CustomTasks()
             
@@ -340,6 +350,9 @@ class CustomCrew:
     def run_tester_with_feedback(self, feedback):
         """Run tester agent with feedback"""
         try:
+            # Import tools here to avoid circular imports
+            from tools.crew_tools import tester_tools
+            
             agents = CustomAgents()
             tasks = CustomTasks()
             
@@ -409,6 +422,9 @@ class CustomCrew:
     def run_reviewer_with_feedback(self, feedback):
         """Run reviewer agent with feedback"""
         try:
+            # Import tools here to avoid circular imports
+            from tools.crew_tools import reviewer_tools
+            
             agents = CustomAgents()
             tasks = CustomTasks()
             
@@ -501,6 +517,9 @@ class CustomCrew:
     
     def run(self):
         try:
+            # Import tools here to avoid circular imports
+            from tools.crew_tools import architect_tools, programmer_tools, tester_tools, reviewer_tools
+            
             agents = CustomAgents()
             tasks = CustomTasks()
 
@@ -669,7 +688,14 @@ def generate_full_plan(task_id: str):
     problem = task.step_messages[0].replace("Task created: ", "")
     
     # Create directory structure
-    output_dir = f"{task_id}"
+    if task.workspace_path:
+        # If workspace_path is available, use it
+        output_dir = os.path.join(task.workspace_path, f"triage-output/{task_id}")
+        print(f"Using workspace path for output: {output_dir}")
+    else:
+        # Fall back to current directory
+        output_dir = f"{task_id}"
+    
     os.makedirs(output_dir, exist_ok=True)
     
     # Get all agent outputs

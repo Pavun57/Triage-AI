@@ -18,6 +18,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException
 import uuid
 from models.schema import ProblemRequest, StatusResponse, AgentOutputResponse, ResultResponse, FeedbackRequest, ApprovalRequest, PauseRequest, ResumeRequest, TaskResponse
 from tools.crew_tools import file_read_tool, architect_tools, programmer_tools, tester_tools, reviewer_tools, security_tools, search_web, read_file, write_file, create_directory
+from tools.file_write import set_workspace_path
 from functions.functions import update_task_status, generate_full_plan,tasks_store,TaskStatus,CustomCrew
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -43,6 +44,12 @@ async def run_problem(request: ProblemRequest, background_tasks: BackgroundTasks
     # Initialize task status
     tasks_store[task_id] = TaskStatus()
     tasks_store[task_id].step_messages.append(f"Task created: {request.problem}")
+    
+    # Store workspace path if provided
+    if request.workspace_path:
+        tasks_store[task_id].workspace_path = request.workspace_path
+        # Set the workspace path in the file_write tool
+        set_workspace_path(request.workspace_path)
     
     # Run only the Project Manager agent in the background
     async def run_first_agent():
@@ -104,7 +111,8 @@ async def get_status(task_id: str):
         "awaiting_user_approval": task.awaiting_user_approval,
         "paused": task.paused,
         "pause_reason": task.pause_reason,
-        "pause_timestamp": task.pause_timestamp
+        "pause_timestamp": task.pause_timestamp,
+        "workspace_path": task.workspace_path
     }
 
 @router.get("/agent_output/{task_id}/{agent}", response_model=AgentOutputResponse)
@@ -166,7 +174,14 @@ async def approve_agent_work(task_id: str, agent: str, request: ApprovalRequest,
     if request.approved:
         try:
             # Create directory structure
-            output_dir = f"{task_id}"
+            if task.workspace_path:
+                # If workspace_path is available, use it
+                output_dir = os.path.join(task.workspace_path, f"triage-output/{task_id}")
+                print(f"Using workspace path for output: {output_dir}")
+            else:
+                # Fall back to current directory
+                output_dir = f"{task_id}"
+            
             os.makedirs(output_dir, exist_ok=True)
             
             # Get agent output
