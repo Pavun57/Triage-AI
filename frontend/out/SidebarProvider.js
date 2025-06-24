@@ -95,137 +95,78 @@ class SidebarProvider {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
   <title>Triage AI</title>
   <link href="${styleUri}" rel="stylesheet" />
-  <!-- All styles moved to main.css -->
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>Triage AI</h1>
-      <div class="step-indicator">
-        <div class="step active" data-step="1">
-          <div class="step-icon">
-            <img src="${pmIconUri}" alt="PM" />
-          </div>
+  <div class="triage-root">
+    <aside class="triage-sidebar">
+      <div class="triage-logo"><img src="${pmIconUri}" alt="Triage AI" /></div>
+      <nav class="triage-stepper">
+        <div class="triage-step" data-step="1">
+          <img src="${pmIconUri}" alt="PM" />
           <span>PM</span>
         </div>
-        <div class="step" data-step="2">
-          <div class="step-icon">
-            <img src="${architectIconUri}" alt="Architect" />
-          </div>
+        <div class="triage-step" data-step="2">
+          <img src="${architectIconUri}" alt="Architect" />
           <span>Architect</span>
         </div>
-        <div class="step" data-step="3">
-          <div class="step-icon">
-            <img src="${securityIconUri}" alt="Security" />
-          </div>
+        <div class="triage-step" data-step="3">
+          <img src="${securityIconUri}" alt="Security" />
           <span>Security</span>
         </div>
-        <div class="step" data-step="4">
-          <div class="step-icon">
-            <img src="${testIconUri}" alt="Test" />
-          </div>
+        <div class="triage-step" data-step="4">
+          <img src="${testIconUri}" alt="Test" />
           <span>Test</span>
         </div>
-      </div>
-    </header>
-
-    <!-- Debug panel -->
-    <div id="debug-panel">
-      <h3>Debug Information</h3>
-      <div id="debug-output"></div>
-      <div class="debug-controls">
-        <button id="test-connection">Test Backend Connection</button>
-        <button id="toggle-debug">Toggle Debug Panel</button>
-      </div>
-      <div class="debug-controls">
-        <button id="start-new" class="restart-button">Start New Task</button>
-      </div>
-    </div>
-
-    <main>
-      <!-- PM Agent Panel -->
-      <section id="pm-panel" class="agent-panel active">
-        <div class="agent-header pm">
+      </nav>
+    </aside>
+    <main class="triage-main">
+      <section id="pm-panel" class="triage-agent-panel pm">
+        <div class="triage-agent-header">
           <img src="${pmIconUri}" alt="PM Agent" />
-          <h2>Product Manager Agent</h2>
-        </div>
-        <div class="agent-content">
-          <p>The PM Agent converts your request into specific feature requirements.</p>
-          <div class="input-area">
-            <textarea id="user-prompt" placeholder="Describe the product or feature you want to build..."></textarea>
-            <button id="analyze-prompt" class="primary-button">Analyze</button>
-          </div>
-          <div class="output-area">
-            <h3>Feature Specifications</h3>
-            <div id="pm-output" class="output-content"></div>
+          <div>
+            <h2>Product Manager</h2>
+            <p>Converts your request into feature requirements.</p>
           </div>
         </div>
-        <div class="navigation">
-          <button class="next-button">Approve & Continue</button>
-        </div>
+        <div class="triage-agent-output" id="pm-output"></div>
+        <button class="approve-button primary-button">Approve</button>
       </section>
-
-      <!-- Architect Agent Panel -->
-      <section id="architect-panel" class="agent-panel">
-        <div class="agent-header architect">
+      <section id="architect-panel" class="triage-agent-panel architect">
+        <div class="triage-agent-header">
           <img src="${architectIconUri}" alt="Architect Agent" />
-          <h2>Architect Agent</h2>
-        </div>
-        <div class="agent-content">
-          <p>The Architect Agent creates a technical design based on the feature specifications.</p>
-          <div class="output-area">
-            <h3>Architecture Design</h3>
-            <div id="architect-output" class="output-content"></div>
+          <div>
+            <h2>Architect</h2>
+            <p>Creates a technical design based on the requirements.</p>
           </div>
         </div>
-        <div class="navigation">
-          <button class="back-button">Back</button>
-          <button class="next-button">Approve & Continue</button>
-        </div>
+        <div class="triage-agent-output" id="architect-output"></div>
+        <button class="approve-button primary-button">Approve</button>
       </section>
-
-      <!-- Security Agent Panel -->
-      <section id="security-panel" class="agent-panel">
-        <div class="agent-header security">
+      <section id="security-panel" class="triage-agent-panel security">
+        <div class="triage-agent-header">
           <img src="${securityIconUri}" alt="Security Agent" />
-          <h2>Security Agent</h2>
-        </div>
-        <div class="agent-content">
-          <p>The Security Agent reviews the architecture for potential security issues.</p>
-          <div class="output-area">
-            <h3>Security Recommendations</h3>
-            <div id="security-output" class="output-content"></div>
+          <div>
+            <h2>Security</h2>
+            <p>Reviews the architecture for potential security issues.</p>
           </div>
         </div>
-        <div class="navigation">
-          <button class="back-button">Back</button>
-          <button class="next-button">Approve & Continue</button>
-        </div>
+        <div class="triage-agent-output" id="security-output"></div>
+        <button class="approve-button primary-button">Approve</button>
       </section>
-      
-      <!-- Test Agent Panel -->
-      <section id="test-panel" class="agent-panel">
-        <div class="agent-header test">
+      <section id="test-panel" class="triage-agent-panel test">
+        <div class="triage-agent-header">
           <img src="${testIconUri}" alt="Test Agent" />
-          <h2>Test Agent</h2>
-        </div>
-        <div class="agent-content">
-          <p>The Test Agent provides a comprehensive testing strategy.</p>
-          <div class="output-area">
-            <h3>Testing Strategy</h3>
-            <div id="test-output" class="output-content"></div>
+          <div>
+            <h2>Test</h2>
+            <p>Provides a comprehensive testing strategy.</p>
           </div>
         </div>
-        <div class="navigation">
-          <button class="back-button">Back</button>
-          <button id="apply-plan" class="primary-button">Apply Plan</button>
-        </div>
+        <div class="triage-agent-output" id="test-output"></div>
+        <button class="approve-button primary-button">Approve</button>
       </section>
-
-      <!-- Loading Spinner with enhanced structure -->
       <div id="loading-spinner" class="loading-overlay">
         <div class="spinner">
           <div class="spinner-inner"></div>
@@ -233,10 +174,14 @@ class SidebarProvider {
         <p id="loading-message">Processing...</p>
       </div>
     </main>
+    <footer class="triage-footer">
+      <div class="input-area global-input-area">
+        <textarea id="user-prompt" placeholder="Describe the product or feature you want to build..." rows="2"></textarea>
+        <button id="analyze-prompt" class="primary-button">Send</button>
+      </div>
+    </footer>
   </div>
-
   <script nonce="${nonce}">
-    // Initialize VS Code API and store it in a global variable
     const vscode = acquireVsCodeApi();
   </script>
   <script nonce="${nonce}" src="${scriptUri}"></script>

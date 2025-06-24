@@ -89,6 +89,7 @@ main::-webkit-scrollbar-thumb {
   margin-bottom: 25px;
   position: relative;
   padding: 0 10px;
+  gap: 32px;
 }
 
 .step-indicator::after {
@@ -173,7 +174,7 @@ main::-webkit-scrollbar-thumb {
   background: var(--dark-bg-secondary);
   border-radius: 8px;
   box-shadow: var(--shadow-md);
-  margin-bottom: 20px;
+  margin-bottom: 32px;
   border: 1px solid var(--dark-border);
   transform: translateY(20px);
   opacity: 0;
@@ -184,65 +185,58 @@ main::-webkit-scrollbar-thumb {
   animation: slideUpFadeIn 0.5s ease forwards;
 }
 
+.agent-panel.pm {
+  border-left: 6px solid var(--agent-pm-color);
+  background: linear-gradient(120deg, rgba(67,97,238,0.10) 0%, var(--dark-bg-secondary) 100%);
+}
+.agent-panel.architect {
+  border-left: 6px solid var(--agent-architect-color);
+  background: linear-gradient(120deg, rgba(59,193,74,0.10) 0%, var(--dark-bg-secondary) 100%);
+}
+.agent-panel.security {
+  border-left: 6px solid var(--agent-security-color);
+  background: linear-gradient(120deg, rgba(230,57,70,0.10) 0%, var(--dark-bg-secondary) 100%);
+}
+.agent-panel.test {
+  border-left: 6px solid var(--agent-test-color);
+  background: linear-gradient(120deg, rgba(156,39,176,0.10) 0%, var(--dark-bg-secondary) 100%);
+}
+
 .agent-header {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--dark-border);
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid var(--vscode-panel-border, var(--dark-border));
+  gap: 18px;
 }
-
 .agent-header img {
-  width: 36px;
-  height: 36px;
-  margin-right: 15px;
-  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
-  transition: transform 0.3s ease;
+  width: 44px;
+  height: 44px;
+  margin-right: 0;
+  filter: drop-shadow(0 0 8px rgba(255,255,255,0.4));
 }
-
-.agent-header:hover img {
-  transform: scale(1.1) rotate(5deg);
+.agent-content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
-
-.agent-header h2 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
+.output-area {
+  margin-top: 18px;
+}
+.output-content {
+  background: var(--dark-bg-tertiary);
+  border-radius: 10px;
+  padding: 18px;
   color: var(--dark-text-primary);
-  letter-spacing: 0.5px;
-}
-
-/* Agent-specific colors */
-.agent-header.pm {
-  color: var(--agent-pm-color);
-}
-
-.agent-header.pm img {
-  filter: drop-shadow(0 0 5px rgba(67, 97, 238, 0.6));
-}
-
-.agent-header.architect {
-  color: var(--agent-architect-color);
-}
-
-.agent-header.architect img {
-  filter: drop-shadow(0 0 5px rgba(59, 193, 74, 0.6));
-}
-
-.agent-header.security {
-  color: var(--agent-security-color);
-}
-
-.agent-header.security img {
-  filter: drop-shadow(0 0 5px rgba(230, 57, 70, 0.6));
-}
-
-.agent-header.test {
-  color: var(--agent-test-color);
-}
-
-.agent-header.test img {
-  filter: drop-shadow(0 0 5px rgba(156, 39, 176, 0.6));
+  font-size: 15px;
+  line-height: 1.7;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+  border: 1.5px solid var(--dark-border);
+  margin-top: 8px;
 }
 
 .agent-content p {
@@ -278,28 +272,11 @@ textarea:focus {
   box-shadow: 0 0 0 2px rgba(233, 69, 96, 0.3), inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-.output-area {
-  margin-top: 20px;
-}
-
 .output-area h3 {
   font-size: 16px;
   margin-bottom: 12px;
   color: var(--dark-text-primary);
   font-weight: 500;
-}
-
-.output-content {
-  background: var(--dark-bg-tertiary);
-  border-radius: 6px;
-  padding: 15px;
-  color: var(--dark-text-primary);
-  font-size: 14px;
-  line-height: 1.6;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--dark-border);
-  position: relative;
-  overflow: hidden;
 }
 
 .output-content::before {
@@ -626,4 +603,276 @@ textarea:focus {
   .navigation button {
     width: 100%;
   }
+  
+  .step-indicator {
+    gap: 12px;
+  }
+  
+  .agent-panel {
+    padding: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .agent-header {
+    font-size: 16px;
+    gap: 10px;
+    padding-bottom: 6px;
+  }
+  
+  .agent-header img {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .output-content {
+    padding: 10px;
+    font-size: 13px;
+  }
 }
+
+/* --- Redesigned Triage AI UI --- */
+.triage-root {
+  display: flex;
+  height: 100vh;
+  background: var(--dark-bg-primary);
+}
+.triage-sidebar {
+  width: 80px;
+  background: var(--dark-bg-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0 0 0;
+  box-shadow: 2px 0 12px rgba(0,0,0,0.10);
+  z-index: 2;
+}
+.triage-logo {
+  margin-bottom: 32px;
+}
+.triage-logo img {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(67,97,238,0.10);
+}
+.triage-stepper {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+  align-items: center;
+}
+.triage-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s, background 0.2s;
+  padding: 8px 0;
+}
+.triage-step.active, .triage-step.selected {
+  opacity: 1;
+  background: var(--dark-bg-tertiary);
+  border-radius: 12px;
+}
+.triage-step img {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 4px;
+}
+.triage-step span {
+  font-size: 12px;
+  color: var(--dark-text-secondary);
+  font-weight: 500;
+}
+.triage-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0;
+  overflow-y: auto;
+  background: var(--dark-bg-primary);
+}
+.triage-agent-panel {
+  width: 100%;
+  max-width: 540px;
+  margin: 40px auto 0 auto;
+  background: var(--dark-bg-secondary);
+  border-radius: 18px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+  padding: 32px 32px 24px 32px;
+  display: none;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 340px;
+  position: relative;
+}
+.triage-agent-panel.active {
+  display: flex;
+  animation: fadeIn 0.5s;
+}
+.triage-agent-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+.triage-agent-header img {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+}
+.triage-agent-header h2 {
+  margin: 0 0 4px 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--dark-text-primary);
+}
+.triage-agent-header p {
+  margin: 0;
+  color: var(--dark-text-secondary);
+  font-size: 14px;
+}
+.triage-agent-output {
+  background: var(--dark-bg-tertiary);
+  border-radius: 10px;
+  padding: 20px;
+  min-height: 120px;
+  color: var(--dark-text-primary);
+  font-size: 15px;
+  line-height: 1.7;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  border: 1.5px solid var(--dark-border);
+  margin-bottom: 24px;
+  margin-top: 8px;
+  word-break: break-word;
+}
+.approve-button.primary-button {
+  align-self: flex-end;
+  min-width: 120px;
+  padding: 10px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+  background: var(--dark-accent);
+  color: #fff;
+  border: none;
+  box-shadow: 0 2px 8px rgba(233,69,96,0.10);
+  transition: background 0.2s, box-shadow 0.2s;
+  margin-top: 8px;
+}
+.approve-button.primary-button:hover {
+  background: #ff5a76;
+  box-shadow: 0 4px 16px rgba(233,69,96,0.18);
+}
+.triage-footer {
+  width: 100%;
+  background: var(--dark-bg-secondary);
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+  padding: 18px 0 18px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 10;
+}
+.input-area.global-input-area {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 540px;
+}
+.input-area.global-input-area textarea {
+  flex: 1;
+  min-height: 44px;
+  max-height: 120px;
+  border-radius: 8px;
+  border: 1.5px solid var(--dark-border);
+  background: var(--dark-bg-tertiary);
+  color: var(--dark-text-primary);
+  font-size: 15px;
+  padding: 12px;
+  resize: vertical;
+  font-family: inherit;
+  transition: border 0.2s;
+}
+.input-area.global-input-area textarea:focus {
+  outline: none;
+  border-color: var(--dark-accent);
+}
+.input-area.global-input-area button {
+  min-width: 90px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+  background: var(--dark-accent);
+  color: #fff;
+  border: none;
+  box-shadow: 0 2px 8px rgba(233,69,96,0.10);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.input-area.global-input-area button:hover {
+  background: #ff5a76;
+  box-shadow: 0 4px 16px rgba(233,69,96,0.18);
+}
+@media (max-width: 700px) {
+  .triage-main, .input-area.global-input-area {
+    max-width: 100vw;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .triage-agent-panel {
+    max-width: 98vw;
+    padding: 16px 4vw 16px 4vw;
+  }
+}
+@media (max-width: 480px) {
+  .triage-sidebar {
+    width: 54px;
+    padding: 10px 0 0 0;
+  }
+  .triage-logo img {
+    width: 32px;
+    height: 32px;
+  }
+  .triage-step img {
+    width: 22px;
+    height: 22px;
+  }
+  .triage-step span {
+    font-size: 10px;
+  }
+  .triage-agent-header img {
+    width: 32px;
+    height: 32px;
+  }
+  .triage-agent-panel {
+    padding: 10px 2vw 10px 2vw;
+    min-height: 180px;
+  }
+  .triage-agent-output {
+    padding: 10px;
+    font-size: 13px;
+  }
+  .approve-button.primary-button {
+    min-width: 80px;
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+  .input-area.global-input-area textarea {
+    font-size: 13px;
+    padding: 8px;
+  }
+  .input-area.global-input-area button {
+    min-width: 60px;
+    font-size: 13px;
+    padding: 8px 8px;
+  }
+}
+/* --- End Redesigned Triage AI UI --- */
