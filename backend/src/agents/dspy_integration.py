@@ -3,38 +3,36 @@ import os
 import warnings
 from typing import List, Dict, Any
 from decouple import config
-from agents.custom_llm import BedrockCustomLLM  # Make sure this returns a *string* from .invoke()
+from agents.custom_llm import LiteLLMCustomLLM  # Make sure this returns a *string* from .invoke()
 
 warnings.filterwarnings("ignore")
 
 # ------------------------------------------------------------------
-# 🔑  Load Bedrock / Claude API credentials
+# 🔑  Load LiteLLM API credentials
 # ------------------------------------------------------------------
-api_key = config("BEDROCK_API_KEY")          # your Bedrock/Claude key (if needed)
-base_url = config("BEDROCK_BASE_URL")           # rename if it's not actually OpenAI
+api_key = config("LITELLM_API_KEY")          # your LiteLLM key
+base_url = config("LITELLM_BASE_URL")           # LiteLLM base URL
 
 # ------------------------------------------------------------------
-# 🔧  Custom DSPy LLM wrapper (Bedrock Claude-3)
+# 🔧  Custom DSPy LLM wrapper (LiteLLM)
 # ------------------------------------------------------------------
 class DSPyLLM(dspy.LM):
-    """DSPy wrapper that routes every prompt to Bedrock and returns a *string*."""
+    """DSPy wrapper that routes every prompt to LiteLLM and returns a *string*."""
 
-    def __init__(self, model: str = "anthropic.claude-3-sonnet-20240229-v1:0"):
+    def __init__(self, model: str = "bedrock/anthropic.claude-3-5-haiku-20241022-v1:0"):
         super().__init__(model=model)
-        self.llm = BedrockCustomLLM(  # must expose .invoke(prompt:str)->str
+        self.llm = LiteLLMCustomLLM(  # must expose .invoke(prompt:str)->str
             model_name=model,
             temperature=0.7,
             max_tokens=800,
             request_timeout=60,
-            api_key=api_key,
-            base_url=base_url,
         )
 
     # --------------------------------------------------------------
-    # Low-level Bedrock request
+    # Low-level LiteLLM request
     # --------------------------------------------------------------
     def basic_request(self, prompt: str, **kwargs) -> str:
-        """Send prompt to Bedrock and return a raw *string* response."""
+        """Send prompt to LiteLLM and return a raw *string* response."""
         try:
             # --- normalise prompt coming from DSPy/Predict
             if isinstance(prompt, dspy.Example):
@@ -48,7 +46,7 @@ class DSPyLLM(dspy.LM):
                 raise ValueError("Empty prompt received")
 
             raw = self.llm.invoke(prompt)  # <-- should already be a string
-            print("[basic_request] Raw Bedrock response received (first 500 chars):\n", raw[:500])
+            print("[basic_request] Raw LiteLLM response received (first 500 chars):\n", raw[:500])
             return raw  # IMPORTANT: return *string* – DSPy will parse it
 
         except Exception as e:

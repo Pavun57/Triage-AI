@@ -2,7 +2,7 @@ from agents.agents import CustomAgents
 from tasks.tasks import CustomTasks
 from tools.search_utils import CachedSearch
 import time
-from crewai import Crew, Task
+from crewai import Crew, Task, Process
 import os
 
 # Import these later to avoid circular imports
@@ -625,10 +625,17 @@ class CustomCrew:
             if self.task_id and self.task_id in tasks_store:
                 update_task_status(self.task_id, "Creating AI crew with all agents and tasks...", 5)
                 
+            # Import our custom LLM to use in crew
+            from agents.custom_llm import LiteLLMCustomLLM
+            custom_llm = LiteLLMCustomLLM()
+            print(f"Created custom LLM: {custom_llm}")
+                
             crew = Crew(
                 agents=[architect_agent, programmer_agent, tester_agent, reviewer_agent],
                 tasks=[architecture_task, implementation_task, testing_task, reviewing_task],
                 verbose=True,
+                llm=custom_llm,  # Explicitly set the LLM for the crew
+                process=Process.sequential,  # Use sequential processing to avoid parallel LLM calls
             )
 
             # Run the crew workflow

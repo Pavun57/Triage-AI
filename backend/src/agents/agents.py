@@ -1,22 +1,22 @@
 from crewai import Agent
 from textwrap import dedent
-from agents.custom_llm import BedrockCustomLLM
+from agents.custom_llm import LiteLLMCustomLLM
 
 
 class CustomAgents:
     def __init__(self):
-        # Using our custom Bedrock LLM implementation that works with the proxy
+        # Using our custom LiteLLM implementation that works with the proxy
         # Main model with higher token limit for complex tasks
-        self.OpenAIGPT4 = BedrockCustomLLM(
-            model_name="gpt-3.5-turbo",
+        self.OpenAIGPT4 = LiteLLMCustomLLM(
+            model_name="bedrock/anthropic.claude-3-5-haiku-20241022-v1:0",
             temperature=0.7,
             max_tokens=800,
             request_timeout=60
         )
         
         # Secondary model with lower token limit for simpler tasks
-        self.OpenAIGPT35 = BedrockCustomLLM(
-            model_name="gpt-3.5-turbo", 
+        self.OpenAIGPT35 = LiteLLMCustomLLM(
+            model_name="bedrock/anthropic.claude-3-5-haiku-20241022-v1:0", 
             temperature=0.7,
             max_tokens=500,
             request_timeout=60

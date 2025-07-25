@@ -18,9 +18,29 @@ from pydantic import BaseModel
 import uuid
 from typing import Dict, List, Optional, Any
 
-# FIXED: Use ANTHROPIC_API_KEY instead of OPENAI_API_KEY
-api_key = config("BEDROCK_API_KEY")
-os.environ["OPENAI_API_KEY"] = api_key
+# FIXED: Use LITELLM_API_KEY instead of BEDROCK_API_KEY
+api_key = config("LITELLM_API_KEY")
+os.environ["LITELLM_API_KEY"] = api_key
+os.environ["OPENAI_API_KEY"] = api_key  # CrewAI expects this
+
+# Disable litellm usage in CrewAI to force use of our custom LLM
+os.environ["LITELLM_DISABLE"] = "true"
+os.environ["CREWAI_DISABLE_LITELLM"] = "true"
+os.environ["OPENAI_API_BASE"] = "https://litellm-production-dba5.up.railway.app"  # Point to our proxy
+
+# Debug: Print the API key being used (first 10 chars for security)
+print(f"Setting LITELLM_API_KEY starting with: {api_key[:10]}...")
+print(f"API key length: {len(api_key)}")
+print(f"Environment OPENAI_API_KEY set to: {os.environ.get('OPENAI_API_KEY', 'NOT_SET')[:10]}...")
+print(f"Environment OPENAI_API_BASE set to: {os.environ.get('OPENAI_API_BASE', 'NOT_SET')}")
+
+# Configure CrewAI to use our custom LLM
+from agents.custom_llm import LiteLLMCustomLLM
+from crewai import Agent
+
+# Set the default LLM for CrewAI agents
+Agent.default_llm = LiteLLMCustomLLM()
+print("Configured CrewAI to use custom LLM")
 
 # Initialize tools
 file_read_tool = FileReadTool()

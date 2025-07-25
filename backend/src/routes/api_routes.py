@@ -39,53 +39,64 @@ project_manager_tools = [
 @router.post("/run", response_model=TaskResponse)
 async def run_problem(request: ProblemRequest, background_tasks: BackgroundTasks):
     """Start a new agent processing task with Project Manager first"""
-    task_id = str(uuid.uuid4())
-    
-    # Initialize task status
-    tasks_store[task_id] = TaskStatus()
-    tasks_store[task_id].step_messages.append(f"Task created: {request.problem}")
-    
-    # Store workspace path if provided
-    if request.workspace_path:
-        tasks_store[task_id].workspace_path = request.workspace_path
-        # Set the workspace path in the file_write tool
-        set_workspace_path(request.workspace_path)
-    
-    # Run only the Project Manager agent in the background
-    async def run_first_agent():
-        try:
-            # Add a small delay to ensure the task ID is returned before processing starts
-            await asyncio.sleep(0.5)
-            
-            update_task_status(task_id, "Starting task execution...", 5)
-            
-            # Start with the Project Manager agent
-            await start_project_manager(task_id)
-            
-        except Exception as e:
-            error_msg = f"Error in task {task_id}: {str(e)}"
-            print(error_msg)
-            if task_id in tasks_store:
-                # Mark task as failed in status
-                update_task_status(
-                    task_id,
-                    f"Error occurred: {str(e)}",
-                    0,
-                    tasks_store[task_id].current_agent, 
-                    "error"
-                )
-                tasks_store[task_id].error = str(e)
-                tasks_store[task_id].complete = True  # Mark as complete but with error
-    
-    # Start the background task
-    background_tasks.add_task(run_first_agent)
-    
-    # Return the task ID immediately 
-    return {
-        "task_id": task_id, 
-        "message": "Task submitted successfully and is being processed",
-        "timestamp": time.time()
-    }
+    try:
+        # Log the request for debugging
+        print(f"Received request - problem: {request.problem[:100]}...")
+        print(f"Workspace path: {request.workspace_path}")
+        
+        task_id = str(uuid.uuid4())
+        
+        # Initialize task status
+        tasks_store[task_id] = TaskStatus()
+        tasks_store[task_id].step_messages.append(f"Task created: {request.problem}")
+        
+        # Store workspace path if provided - normalize Windows paths
+        if request.workspace_path:
+            # Convert Windows backslashes to forward slashes for consistency
+            normalized_path = request.workspace_path.replace('\\', '/')
+            tasks_store[task_id].workspace_path = normalized_path
+            # Set the workspace path in the file_write tool
+            set_workspace_path(normalized_path)
+            print(f"Normalized workspace path: {normalized_path}")
+        
+        # Run only the Project Manager agent in the background
+        async def run_first_agent():
+            try:
+                # Add a small delay to ensure the task ID is returned before processing starts
+                await asyncio.sleep(0.5)
+                
+                update_task_status(task_id, "Starting task execution...", 5)
+                
+                # Start with the Project Manager agent
+                await start_project_manager(task_id)
+                
+            except Exception as e:
+                error_msg = f"Error in task {task_id}: {str(e)}"
+                print(error_msg)
+                if task_id in tasks_store:
+                    # Mark task as failed in status
+                    update_task_status(
+                        task_id,
+                        f"Error occurred: {str(e)}",
+                        0,
+                        tasks_store[task_id].current_agent, 
+                        "error"
+                    )
+                    tasks_store[task_id].error = str(e)
+                    tasks_store[task_id].complete = True  # Mark as complete but with error
+        
+        # Start the background task
+        background_tasks.add_task(run_first_agent)
+        
+        # Return the task ID immediately 
+        return {
+            "task_id": task_id, 
+            "message": "Task submitted successfully and is being processed",
+            "timestamp": time.time()
+        }
+    except Exception as e:
+        print(f"Error in run_problem endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @router.get("/status/{task_id}", response_model=StatusResponse)
 async def get_status(task_id: str):
